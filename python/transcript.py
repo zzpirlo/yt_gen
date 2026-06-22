@@ -35,33 +35,25 @@ def extract_video_id(url):
 def fetch_transcript(video_id, languages=['en']):
     """Fetch transcript for given video ID."""
     try:
-        # Try to get transcript with language preference
-        try:
-            transcript_data = YouTubeTranscriptApi.get_transcript(video_id, languages=languages)
-        except NoTranscriptFound:
-            # If no transcript in preferred languages, try to get any available transcript
-            transcript_list = YouTubeTranscriptApi.list(video_id)
+        # Create an instance of YouTubeTranscriptApi
+        api = YouTubeTranscriptApi()
+        
+        # Try to fetch transcript with preferred language
+        transcript_obj = None
+        
+        for lang in languages:
+            try:
+                transcript_obj = api.fetch(video_id, languages=[lang])
+                break
+            except:
+                continue
+        
+        # If no preferred language found, try without language specification
+        if transcript_obj is None:
+            transcript_obj = api.fetch(video_id)
 
-            # Try to find transcript in preferred languages
-            transcript = None
-            for lang in languages:
-                try:
-                    transcript = transcript_list.find_transcript([lang])
-                    break
-                except:
-                    continue
-
-            # If still no transcript, get the first available one
-            if transcript is None:
-                # Convert to list to iterate (it's a generator)
-                transcript_list_items = list(transcript_list)
-                if transcript_list_items:
-                    transcript = transcript_list_items[0]
-                else:
-                    raise NoTranscriptFound("No transcripts available")
-
-            # Fetch the transcript data
-            transcript_data = transcript.fetch()
+        # Extract raw transcript data
+        transcript_data = transcript_obj.to_raw_data()
 
         # Convert to clean JSON format
         clean_transcript = []
