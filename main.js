@@ -30,7 +30,7 @@ const CONFIG = {
   CLIPS_OUTPUT: path.join(__dirname, 'data', 'clips.json'), // Same file for simplicity
 
   // Markdown review file (as per CLAUDE.md requirement)
-  REVIEW_FILE: path.join(__নে, 'transcript_review.md')
+  REVIEW_FILE: path.join(__dirname, 'transcript_review.md')
 };
 
 /**
@@ -58,8 +58,12 @@ function runTranscriptStep(youtubeUrl) {
   try {
     console.log('🔄 Step 1: Generating transcript from YouTube...');
 
+    // Determine which python to use (prefer venv if available)
+    const venvPython = path.join(__dirname, 'venv', 'bin', 'python3');
+    const pythonExecutable = fs.existsSync(venvPython) ? venvPython : 'python3';
+
     // Call the Python transcript script
-    const command = `python3 "${transcriptScript}" "${youtubeUrl}" "${CONFIG.TRANSCRIPT_OUTPUT}"`;
+    const command = `"${pythonExecutable}" "${transcriptScript}" "${youtubeUrl}" "${CONFIG.TRANSCRIPT_OUTPUT}"`;
     const result = execSync(command, { stdio: 'pipe', encoding: 'utf8' });
 
     console.log('✓ Transcript generation completed');

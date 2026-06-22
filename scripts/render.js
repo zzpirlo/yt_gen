@@ -101,9 +101,11 @@ import { React } from 'react';
 import { Composition, describeAsset, Seq, Series, Video } from 'remotion';
 
 // Import the clipped video as an asset
+const assetPath = path.join(__dirname, '..', 'assets', `${clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${index + 1}.mp4`);
+const relativePath = path.relative(projectPath, assetPath).replace(/\\/g, '/');
 const videoAsset = describeAsset({
   id: 'video-asset',
-  src: '${path.relative(projectPath, path.join(__dirname, '..', 'assets', \`${clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_\${index + 1}.mp4\`))}'.replace(/\\/g, '/'),
+  src: relativePath,
 });
 
 // Main component for the video clip

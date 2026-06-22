@@ -58,7 +58,7 @@ async function downloadVideo(youtubeUrl) {
   const command = `yt-dlp ${Object.entries(CONFIG.YTDLP_OPTIONS)
     .map(([key, value]) => {
       if (key === 'output') return ''; // handled separately
-      return `--${key} ${value}`;
+      return `--${key} "${value}"`;
     })
     .filter(Boolean)
     .join(' ')} -o "${outputTemplate}" "${youtubeUrl}"`;
@@ -100,6 +100,10 @@ async function cutClips(videoPath, clips) {
     console.log(`Removed old asset file: ${file}`);
   });
 
+  const ffmpegPath = path.join(__dirname, '..', 'ffmpeg');
+  const ffmpegExists = fs.existsSync(ffmpegPath);
+  const ffmpegCommand = ffmpegExists ? ffmpegPath : 'ffmpeg';
+
   clips.forEach((clip, index) => {
     const outputName = `${clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${index + 1}.mp4`;
     const outputPath = path.join(CONFIG.ASSETS_DIR, outputName);
@@ -107,7 +111,7 @@ async function cutClips(videoPath, clips) {
     const duration = clip.end - clip.start;
 
     // FFmpeg command to cut clip
-    const command = `ffmpeg -i "${videoPath}" -ss ${clip.start.toFixed(3)} -t ${duration.toFixed(3)} -c:v libx264 -c:a aac -avoid_negative_ts make_zero -y "${outputPath}"`;
+    const command = `${ffmpegCommand} -i "${videoPath}" -ss ${clip.start.toFixed(3)} -t ${duration.toFixed(3)} -c:v libx264 -c:a aac -avoid_negative_ts make_zero -y "${outputPath}"`;
 
     try {
       console.log(`Processing clip ${index + 1}/${clips.length}: "${clip.title}" (${clip.start}s - ${clip.end}s)`);
