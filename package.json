@@ -1,6 +1,7 @@
 {
   "dependencies": {
     "@remotion/cli": "^4.0.482",
-    "remotion": "^4.0.482"
+    "remotion": "^4.0.482",
+    "rimraf": "^6.1.3"
   }
 }

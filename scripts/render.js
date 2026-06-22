@@ -96,16 +96,17 @@ function createRemotionProject(clip, index) {
   );
 
   // Create index.js (Remotion entry point)
+  const assetPath = path.join(__dirname, '..', 'assets', clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + (index + 1) + '.mp4');
+  const relativePath = path.relative(projectPath, assetPath).replace(/\\/g, '/');
+
   const indexJs = `
 import { React } from 'react';
-import { Composition, describeAsset, Seq, Series, Video } from 'remotion';
+import { Composition, describeAsset, Seq, Series, Video, registerRoot } from 'remotion';
 
 // Import the clipped video as an asset
-const assetPath = path.join(__dirname, '..', 'assets', `${clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${index + 1}.mp4`);
-const relativePath = path.relative(projectPath, assetPath).replace(/\\/g, '/');
 const videoAsset = describeAsset({
   id: 'video-asset',
-  src: relativePath,
+  src: '${relativePath}',
 });
 
 // Main component for the video clip
@@ -114,15 +115,16 @@ const VideoClip = () => {
     <Composition
       id="VideoClip"
       component={VideoClipInner}
-      durationInFrames={${Math.floor(clip.end - clip.start) * CONFIG.FPS}}
-      fps={${CONFIG.FPS}}
-      width={${CONFIG.VIDEO_WIDTH}}
-      height={${CONFIG.VIDEO_HEIGHT}}
-    >
+      durationInFrames=${Math.floor((clip.end - clip.start) * CONFIG.FPS)}
+      fps=${CONFIG.FPS}
+      width=${CONFIG.VIDEO_WIDTH}
+      height=${CONFIG.VIDEO_HEIGHT}>
       <VideoClipInner />
     </Composition>
   );
 };
+
+registerRoot(VideoClip);
 
 const VideoClipInner = () => {
   return (
@@ -246,7 +248,7 @@ function renderRemotionProject(projectPath, clip, index) {
 
     // Render the video using Remotion
     console.log(`Rendering clip ${index + 1}: "${clip.title}"...`);
-    const renderCommand = `npx remotion render ${CONFIG.REMOTION_COMPONENT} ${outputPath} --codec h264 --crf 18`;
+    const renderCommand = `npx remotion render index.js default ${outputPath} --codec h264 --crf 18`;
 
     execSync(renderCommand, { stdio: 'inherit' });
 

@@ -1,0 +1,10 @@
+{
+  "name": "yt-clip-1",
+  "version": "1.0.0",
+  "description": "Remotion project for clip: Never Gonna Give You Up - Opening Line",
+  "main": "index.js",
+  "dependencies": {
+    "remotion": "^4.0.0",
+    "@remotion/cli": "^4.0.0"
+  }
+}
