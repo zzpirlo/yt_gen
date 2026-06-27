@@ -1,3 +1,7 @@
 {
-  "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ"
+  "youtubeUrl": "https://www.youtube.com/watch?v=dQw4w9WgXcQ",
+  "elevenlabsVoiceId": "21m00Tcm4TlvDq8ikWAM",
+  "defaultLanguage": "en",
+  "videoQuality": "720p",
+  "outputFormat": "mp4"
 }

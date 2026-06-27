@@ -1,12 +1,15 @@
 #!/usr/bin/env node
 /**
  * Remotion Rendering Script
- * Node script triggering Remotion to render final vertical shorts with captions and motion graphics
+ * Uses Remotion's Node.js API to render final vertical shorts with captions and motion graphics
  */
 
-const { execSync } = require('child_process');
+require('dotenv').config();
 const fs = require('fs');
 const path = require('path');
+const http = require('http');
+const { renderMedia, selectComposition } = require('@remotion/renderer');
+const { bundle } = require('@remotion/bundler');
 
 // Configuration
 const CONFIG = {
@@ -16,23 +19,79 @@ const CONFIG = {
 
   // Output directories
   OUTPUTS_DIR: path.join(__dirname, '..', 'Outputs'), // Final rendered videos
-  PROJECTS_DIR: path.join(__dirname, '..', 'projects'), // Individual Remotion projects
-  REMOTION_DIR: path.join(__dirname, '..', 'remotion'), // Global Remotion components
 
   // Remotion settings
-  REMOTION_COMPONENT: 'VideoClip', // Main component to render
-  REMOTION_ENTRY: 'index.js', // Entry point for Remotion project
-  DEFAULT_DURATION: 15, // seconds
   VIDEO_WIDTH: 1080, // vertical format
   VIDEO_HEIGHT: 1920, // vertical format
   FPS: 30
 };
 
+// HTTP server for serving video files
+let httpServer = null;
+const SERVER_PORT = 34567;
+const SERVER_URL = `http://localhost:${SERVER_PORT}`;
+
+/**
+ * Start HTTP server to serve video files
+ */
+function startHttpServer() {
+  return new Promise((resolve, reject) => {
+    httpServer = http.createServer((req, res) => {
+      // Serve video files from assets directory
+      const assetPath = path.join(CONFIG.ASSETS_DIR, req.url.slice(1));
+      if (fs.existsSync(assetPath) && (assetPath.endsWith('.mp4') || assetPath.endsWith('.webm'))) {
+        const stat = fs.statSync(assetPath);
+        res.writeHead(200, {
+          'Content-Type': 'video/mp4',
+          'Content-Length': stat.size,
+          'Access-Control-Allow-Origin': '*',
+          'Accept-Ranges': 'bytes'
+        });
+        fs.createReadStream(assetPath).pipe(res);
+      } else {
+        res.writeHead(404);
+        res.end('Not found');
+      }
+    });
+
+    httpServer.listen(SERVER_PORT, () => {
+      console.log(`  HTTP server started on ${SERVER_URL}`);
+      resolve();
+    });
+
+    httpServer.on('error', (err) => {
+      if (err.code === 'EADDRINUSE') {
+        // Port already in use, try next port
+        SERVER_PORT++;
+        httpServer.listen(SERVER_PORT);
+      } else {
+        reject(err);
+      }
+    });
+  });
+}
+
+/**
+ * Stop HTTP server
+ */
+function stopHttpServer() {
+  return new Promise((resolve) => {
+    if (httpServer) {
+      httpServer.close(() => {
+        console.log('  HTTP server stopped');
+        resolve();
+      });
+    } else {
+      resolve();
+    }
+  });
+}
+
 /**
  * Ensure required directories exist
  */
 function ensureDirectories() {
-  [CONFIG.OUTPUTS_DIR, CONFIG.PROJECTS_DIR, CONFIG.REMOTION_DIR].forEach(dir => {
+  [CONFIG.OUTPUTS_DIR].forEach(dir => {
     if (!fs.existsSync(dir)) {
       fs.mkdirSync(dir, { recursive: true });
       console.log(`Created directory: ${dir}`);
@@ -41,73 +100,31 @@ function ensureDirectories() {
 }
 
 /**
- * Check if Remotion is installed, install if necessary
- */
-function ensureRemotionInstalled() {
-  try {
-    execSync('remotion --version', { stdio: 'ignore' });
-    console.log('✓ Remotion is already installed');
-  } catch (error) {
-    console.log('Installing Remotion...');
-    try {
-      execSync('npm install remotion @remotion/cli', { stdio: 'inherit' });
-      console.log('✓ Remotion installed successfully');
-    } catch (installError) {
-      throw new Error(`Failed to install Remotion: ${installError.message}`);
-    }
-  }
-}
-
-/**
- * Create a Remotion project for a specific clip
+ * Create the React component for a clip
  * @param {Object} clip - Clip object with metadata
- * @param {number} index - Clip index
- * @returns {string} Path to Remotion project directory
+ * @returns {string} React component code as string
  */
-function createRemotionProject(clip, index) {
-  const projectName = `${clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${index + 1}`;
-  const projectPath = path.join(CONFIG.PROJECTS_DIR, projectName);
+function createClipComponent(clip) {
+  const assetFileName = clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_1.mp4';
+  // Find the actual asset file
+  const files = fs.readdirSync(CONFIG.ASSETS_DIR);
+  const searchKey = clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase().split('_')[0];
+  const assetFile = files.find(f => f.includes(searchKey));
+  const actualAssetFile = assetFile || assetFileName;
 
-  // Remove existing project if any
-  if (fs.existsSync(projectPath)) {
-    const rimraf = require('rimraf');
-    rimraf.sync(projectPath);
-    console.log(`Removed existing project: ${projectPath}`);
-  }
+  // Use HTTP URL for video source (served by local HTTP server)
+  const videoSrc = `${SERVER_URL}/${actualAssetFile}`;
 
-  // Create project directory
-  fs.mkdirSync(projectPath, { recursive: true });
+  const durationFrames = Math.floor((clip.end - clip.start) * CONFIG.FPS);
+  const fromFrame = clip.start * CONFIG.FPS;
+  const toFrame = clip.end * CONFIG.FPS;
 
-  // Create package.json for the project
-  const packageJson = {
-    name: `yt-clip-${index + 1}`,
-    version: "1.0.0",
-    description: `Remotion project for clip: ${clip.title}`,
-    main: "index.js",
-    dependencies: {
-      "remotion": "^4.0.0",
-      "@remotion/cli": "^4.0.0"
-    }
-  };
+  const hookText = JSON.stringify(clip.hook);
+  const titleText = JSON.stringify(clip.title);
 
-  fs.writeFileSync(
-    path.join(projectPath, 'package.json'),
-    JSON.stringify(packageJson, null, 2)
-  );
-
-  // Create index.js (Remotion entry point)
-  const assetPath = path.join(__dirname, '..', 'assets', clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + (index + 1) + '.mp4');
-  const relativePath = path.relative(projectPath, assetPath).replace(/\\/g, '/');
-
-  const indexJs = `
-import { React } from 'react';
-import { Composition, describeAsset, Seq, Series, Video, registerRoot } from 'remotion';
-
-// Import the clipped video as an asset
-const videoAsset = describeAsset({
-  id: 'video-asset',
-  src: '${relativePath}',
-});
+  // Use template literal for clean code generation
+  return `import React from 'react';
+import { Composition, Video, registerRoot, AbsoluteFill } from 'remotion';
 
 // Main component for the video clip
 const VideoClip = () => {
@@ -115,10 +132,10 @@ const VideoClip = () => {
     <Composition
       id="VideoClip"
       component={VideoClipInner}
-      durationInFrames=${Math.floor((clip.end - clip.start) * CONFIG.FPS)}
-      fps=${CONFIG.FPS}
-      width=${CONFIG.VIDEO_WIDTH}
-      height=${CONFIG.VIDEO_HEIGHT}>
+      durationInFrames={${durationFrames}}
+      fps={${CONFIG.FPS}}
+      width={${CONFIG.VIDEO_WIDTH}}
+      height={${CONFIG.VIDEO_HEIGHT}}>
       <VideoClipInner />
     </Composition>
   );
@@ -130,9 +147,9 @@ const VideoClipInner = () => {
   return (
     <>
       <Video
-        from={${clip.start * CONFIG.FPS}}
-        to={${clip.end * CONFIG.FPS}}
-        video={videoAsset}
+        src="${videoSrc}"
+        from={${fromFrame}}
+        to={${toFrame}}
         style={{
           width: ${CONFIG.VIDEO_WIDTH},
           height: ${CONFIG.VIDEO_HEIGHT},
@@ -141,123 +158,105 @@ const VideoClipInner = () => {
       />
 
       {/* Add caption background */}
-      <div style={{
-        position: 'absolute',
-        bottom: 20,
-        left: 0,
-        right: 0,
-        backgroundColor: 'rgba(0,0,0,0.5)',
-        padding: 20
+      <AbsoluteFill style={{
+        display: 'flex',
+        flexDirection: 'column',
+        justifyContent: 'flex-end',
+        paddingBottom: 60,
+        paddingLeft: 40,
+        paddingRight: 40,
+        pointerEvents: 'none'
       }}>
         {/* Hook text */}
         <div style={{
           color: 'white',
-          fontSize: 36,
+          fontSize: 48,
           textAlign: 'center',
           fontWeight: 'bold',
-          textShadow: '0 0 10px rgba(0,0,0,0.5)'
+          textShadow: '0 0 30px rgba(0,0,0,0.9)',
+          fontFamily: 'Arial, sans-serif',
+          lineHeight: 1.2,
+          marginBottom: 16,
+          maxWidth: '90%',
+          alignSelf: 'center'
         }}>
-          ${JSON.stringify(clip.hook)}
+          ${hookText}
         </div>
 
         {/* Title text */}
         <div style={{
           color: '#ffcc00',
-          fontSize: 28,
+          fontSize: 36,
           textAlign: 'center',
-          marginTop: 10
+          fontWeight: '600',
+          textShadow: '0 0 20px rgba(0,0,0,0.8)',
+          fontFamily: 'Arial, sans-serif',
+          lineHeight: 1.3,
+          maxWidth: '90%',
+          alignSelf: 'center'
         }}>
-          ${JSON.stringify(clip.title)}
+          ${titleText}
         </div>
-      </div>
-
-      {/* Optional: Add progress bar */}
-      <div style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 4,
-        background: 'linear-gradient(90deg, #ff0000, #ffff00)',
-        transform: 'scaleX(var(--progress))',
-        transformOrigin: 'left'
-      }}>
-        <Seq>
-          {/* This would be animated in a real implementation */}
-        </Seq>
-      </div>
+      </AbsoluteFill>
     </>
   );
 };
 
 export default VideoClip;
 `;
-
-  fs.writeFileSync(
-    path.join(projectPath, 'index.js'),
-    indexJs.trim()
-  );
-
-  // Create a simple README for the project
-  const readmeContent = `# Remotion Project: ${clip.title}
-
-This project renders a vertical short-form video clip.
-
-## Clip Information
-- **Title**: ${clip.title}
-- **Hook**: ${clip.hook}
-- **Duration**: ${clip.end - clip.start} seconds
-- **Timestamps**: ${clip.start}s to ${clip.end}s
-
-## Render Command
-\`\`\`bash
-npm run render
-\`\`\`
-`;
-
-  fs.writeFileSync(
-    path.join(projectPath, 'README.md'),
-    readmeContent
-  );
-
-  console.log(`✓ Created Remotion project: ${projectPath}`);
-  return projectPath;
 }
 
 /**
- * Render a Remotion project to video file
- * @param {string} projectPath - Path to Remotion project directory
- * @param {Object} clip - Clip object for naming output
+ * Render a clip using Remotion's Node.js API
+ * @param {Object} clip - Clip object
  * @param {number} index - Clip index
- * @returns {string} Path to rendered video file
+ * @returns {Promise<string>} Path to rendered video file
  */
-function renderRemotionProject(projectPath, clip, index) {
-  const outputName = `${clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${index + 1}_rendered.mp4`;
+async function renderClip(clip, index) {
+  const outputName = clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + (index + 1) + '_rendered.mp4';
   const outputPath = path.join(CONFIG.OUTPUTS_DIR, outputName);
 
-  // Change to project directory and install dependencies if needed
-  const originalDir = process.cwd();
+  console.log('Rendering clip ' + (index + 1) + ': "' + clip.title + '"...');
+
   try {
-    process.chdir(projectPath);
+    // Create a temporary entry point file
+    const tempDir = path.join(__dirname, '..', '.remotion-temp', 'clip_' + (index + 1));
+    fs.mkdirSync(tempDir, { recursive: true });
 
-    // Check if node_modules exists, if not install
-    if (!fs.existsSync(path.join(projectPath, 'node_modules'))) {
-      console.log(`Installing dependencies for project ${index + 1}...`);
-      execSync('npm install', { stdio: 'inherit' });
-    }
+    const entryPoint = path.join(tempDir, 'index.js');
+    const componentCode = createClipComponent(clip);
+    fs.writeFileSync(entryPoint, componentCode);
 
-    // Render the video using Remotion
-    console.log(`Rendering clip ${index + 1}: "${clip.title}"...`);
-    const renderCommand = `npx remotion render index.js default ${outputPath} --codec h264 --crf 18`;
+    // Bundle the composition
+    console.log('  Bundling composition...');
+    const bundleResult = await bundle(entryPoint);
 
-    execSync(renderCommand, { stdio: 'inherit' });
+    // Select the composition
+    console.log('  Selecting composition...');
+    const composition = await selectComposition({
+      serveUrl: bundleResult,
+      id: 'VideoClip',
+      inputProps: {},
+    });
 
-    console.log(`✓ Rendered video saved: ${outputPath}`);
+    // Render the video
+    console.log('  Rendering video...');
+    await renderMedia({
+      composition,
+      serveUrl: bundleResult,
+      codec: 'h264',
+      outputLocation: outputPath,
+      inputProps: {},
+      // Increase timeout for video loading
+      timeoutInMilliseconds: 120000,
+      // Disable concurrency for stability
+      concurrency: 1,
+    });
+
+    console.log('✓ Rendered video saved: ' + outputPath);
     return outputPath;
   } catch (error) {
-    throw new Error(`Failed to render Remotion project: ${error.message}`);
-  } finally {
-    process.chdir(originalDir);
+    throw new Error('Failed to render clip "' + clip.title + '": ' + error.message);
   }
 }
 
@@ -271,66 +270,70 @@ async function main() {
     // Ensure directories exist
     ensureDirectories();
 
-    // Ensure Remotion is available
-    ensureRemotionInstalled();
+    // Start HTTP server for video files
+    await startHttpServer();
 
     // Read clips.json (output from Claude step)
     if (!fs.existsSync(CONFIG.CLIPS_FILE)) {
-      throw new Error(`Clips file not found: ${CONFIG.CLIPS_FILE}. Run the Claude step first to generate clips.json.`);
+      await stopHttpServer();
+      throw new Error('Clips file not found: ' + CONFIG.CLIPS_FILE + '. Run the Claude step first to generate clips.json.');
     }
 
     const clipsData = JSON.parse(fs.readFileSync(CONFIG.CLIPS_FILE, 'utf8'));
     const clips = clipsData.clips || [];
 
     if (clips.length === 0) {
+      await stopHttpServer();
       throw new Error('No clips found in clips.json');
     }
 
-    console.log(`📋 Loaded ${clips.length} clips from ${CONFIG.CLIPS_FILE}\n`);
+    console.log('📋 Loaded ' + clips.length + ' clips from ' + CONFIG.CLIPS_FILE + '\n');
 
     // Process each clip
     const renderedVideos = [];
 
-    clips.forEach((clip, index) => {
-      console.log(`🔄 Processing clip ${index + 1}/${clips.length}: "${clip.title}"`);
+    for (let index = 0; index < clips.length; index++) {
+      const clip = clips[index];
+      console.log('🔄 Processing clip ' + (index + 1) + '/' + clips.length + ': "' + clip.title + '"');
 
       try {
-        // Step 1: Create Remotion project for this clip
-        const projectPath = createRemotionProject(clip, index);
-
-        // Step 2: Render the project to video file
-        const renderedPath = renderRemotionProject(projectPath, clip, index);
-
+        const renderedPath = await renderClip(clip, index);
         renderedVideos.push({
           clip,
-          projectPath,
           renderedPath
         });
-
-        console.log(`✅ Clip ${index + 1} processed successfully\n`);
+        console.log('✅ Clip ' + (index + 1) + ' processed successfully\n');
       } catch (error) {
-        console.error(`✗ Failed to process clip "${clip.title}":`, error.message);
+        console.error('✗ Failed to process clip "' + clip.title + '":', error.message);
         console.log('Continuing with next clip...\n');
       }
-    });
+    }
+
+    // Stop HTTP server
+    await stopHttpServer();
+
+    // Cleanup temp directory
+    const tempDir = path.join(__dirname, '..', '.remotion-temp');
+    if (fs.existsSync(tempDir)) {
+      fs.rmSync(tempDir, { recursive: true, force: true });
+    }
 
     // Summary
     console.log('🎉 Remotion rendering process completed!');
-    console.log(`\n📊 Summary:`);
-    console.log(`  - Total clips processed: ${clips.length}`);
-    console.log(`  - Successfully rendered: ${renderedVideos.length}`);
-    console.log(`  - Failed: ${clips.length - renderedVideos.length}`);
+    console.log('\n📊 Summary:');
+    console.log('  - Total clips processed: ' + clips.length);
+    console.log('  - Successfully rendered: ' + renderedVideos.length);
+    console.log('  - Failed: ' + (clips.length - renderedVideos.length));
 
     if (renderedVideos.length > 0) {
-      console.log(`\n📁 Rendered videos saved to:`);
+      console.log('\n📁 Rendered videos saved to:');
       renderedVideos.forEach(({ renderedPath }) => {
-        console.log(`  - ${renderedPath}`);
+        console.log('  - ' + renderedPath);
       });
-
-      console.log(`\n📁 Remotion projects saved to: ${CONFIG.PROJECTS_DIR}`);
     }
 
   } catch (error) {
+    await stopHttpServer();
     console.error('\n❌ Rendering process failed:');
     console.error(error.message);
     process.exit(1);
@@ -342,4 +345,4 @@ if (require.main === module) {
   main();
 }
 
-module.exports = { createRemotionProject, renderRemotionProject };
+module.exports = { renderClip };

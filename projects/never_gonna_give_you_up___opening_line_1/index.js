@@ -1,11 +1,5 @@
-import { React } from 'react';
-import { Composition, describeAsset, Seq, Series, Video, registerRoot } from 'remotion';
-
-// Import the clipped video as an asset
-const videoAsset = describeAsset({
-  id: 'video-asset',
-  src: '../../assets/never_gonna_give_you_up___opening_line_1.mp4',
-});
+import React from 'react';
+import { Composition, Video, registerRoot } from 'remotion';
 
 // Main component for the video clip
 const VideoClip = () => {
@@ -13,10 +7,10 @@ const VideoClip = () => {
     <Composition
       id="VideoClip"
       component={VideoClipInner}
-      durationInFrames=450
-      fps=30
-      width=1080
-      height=1920>
+      durationInFrames={450}
+      fps={30}
+      width={1080}
+      height={1920}>
       <VideoClipInner />
     </Composition>
   );
@@ -28,9 +22,9 @@ const VideoClipInner = () => {
   return (
     <>
       <Video
+        src="/clip_1.mp4"
         from={1500}
         to={1950}
-        video={videoAsset}
         style={{
           width: 1080,
           height: 1920,
@@ -67,22 +61,6 @@ const VideoClipInner = () => {
         }}>
           "Never Gonna Give You Up - Opening Line"
         </div>
-      </div>
-
-      {/* Optional: Add progress bar */}
-      <div style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 4,
-        background: 'linear-gradient(90deg, #ff0000, #ffff00)',
-        transform: 'scaleX(var(--progress))',
-        transformOrigin: 'left'
-      }}>
-        <Seq>
-          {/* This would be animated in a real implementation */}
-        </Seq>
       </div>
     </>
   );

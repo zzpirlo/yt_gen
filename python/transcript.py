@@ -2,11 +2,13 @@
 """
 YouTube Transcript Fetcher
 Responsible for fetching YouTube transcripts and outputting clean JSON.
+Supports proxy configuration to bypass IP blocking.
 """
 
 import sys
 import json
 import re
+import os
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound, VideoUnavailable
 
@@ -32,22 +34,32 @@ def extract_video_id(url):
     raise ValueError("Unable to extract video ID from URL")
 
 
-def fetch_transcript(video_id, languages=['en']):
-    """Fetch transcript for given video ID."""
+def fetch_transcript(video_id, languages=['en'], proxy=None):
+    """Fetch transcript for given video ID.
+
+    Args:
+        video_id: YouTube video ID
+        languages: List of preferred languages
+        proxy: Proxy URL (e.g., 'http://user:pass@host:port' or 'socks5://host:port')
+               Note: The youtube-transcript-api library uses httpx internally,
+               which automatically respects HTTP_PROXY and HTTPS_PROXY environment variables.
+               You can also set YOUTUBE_TRANSCRIPT_PROXY env var.
+    """
     try:
         # Create an instance of YouTubeTranscriptApi
+        # The library uses httpx internally which respects HTTP_PROXY/HTTPS_PROXY env vars
         api = YouTubeTranscriptApi()
-        
+
         # Try to fetch transcript with preferred language
         transcript_obj = None
-        
+
         for lang in languages:
             try:
                 transcript_obj = api.fetch(video_id, languages=[lang])
                 break
             except:
                 continue
-        
+
         # If no preferred language found, try without language specification
         if transcript_obj is None:
             transcript_obj = api.fetch(video_id)
@@ -74,6 +86,9 @@ def fetch_transcript(video_id, languages=['en']):
     except VideoUnavailable:
         raise Exception("Video is unavailable")
     except Exception as e:
+        # Check if it's an IP block error
+        if "blocked" in str(e).lower() or "ip" in str(e).lower() or "429" in str(e):
+            raise Exception(f"YouTube IP block detected. Set HTTP_PROXY/HTTPS_PROXY or YOUTUBE_TRANSCRIPT_PROXY env var. Error: {str(e)}")
         raise Exception(f"Error fetching transcript: {str(e)}")
 
 
@@ -86,13 +101,18 @@ def main():
     url_or_id = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else "data/transcript.json"
 
+    # Get proxy from environment variable
+    proxy = os.getenv('YOUTUBE_TRANSCRIPT_PROXY') or os.getenv('HTTP_PROXY') or os.getenv('HTTPS_PROXY')
+
     try:
         # Extract video ID
         video_id = extract_video_id(url_or_id)
         print(f"Fetching transcript for video ID: {video_id}", file=sys.stderr)
+        if proxy:
+            print(f"Using proxy: {proxy}", file=sys.stderr)
 
         # Fetch transcript
-        transcript_data = fetch_transcript(video_id)
+        transcript_data = fetch_transcript(video_id, proxy=proxy)
 
         # Output to file
         with open(output_file, 'w', encoding='utf-8') as f:

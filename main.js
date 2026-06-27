@@ -5,6 +5,7 @@
  * Transcript Generation -> Clip Selection -> Video Extraction -> Rendering
  */
 
+require('dotenv').config();
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -38,15 +39,37 @@ const CONFIG = {
  */
 function showPipelineOverview() {
   console.log('🎬 YT Clipper - YouTube to Shorts Pipeline');
-  console.log('=' .repeat(50));
+  console.log('='.repeat(50));
   console.log('Pipeline Steps:');
   console.log('  1. 📄 Transcript Generation (Python)');
   console.log('  2. 🤖 Clip Selection (Claude AI) - REQUIRES USER REVIEW');
   console.log('  3. 🎥 Video Extraction (yt-dlp + FFmpeg)');
   console.log('  4. 🎨 Rendering (Remotion)');
-  console.log('=' .repeat(50));
+  console.log('='.repeat(50));
   console.log('Important: Step 2 (Clip Selection) requires manual review');
   console.log('of the generated transcript before proceeding.\n');
+}
+
+/**
+ * Ensure required project directories exist
+ */
+function ensureProjectDirectories() {
+  const dirs = [
+    path.join(__dirname, 'python'),
+    path.join(__dirname, 'data'),
+    path.join(__dirname, 'video'),
+    path.join(__dirname, 'assets'),
+    path.join(__dirname, 'Outputs'),
+    path.join(__dirname, 'projects'),
+    path.join(__dirname, 'remotion')
+  ];
+
+  dirs.forEach(dir => {
+    if (!fs.existsSync(dir)) {
+      fs.mkdirSync(dir, { recursive: true });
+      console.log(`Created directory: ${dir}`);
+    }
+  });
 }
 
 /**
@@ -62,9 +85,12 @@ function runTranscriptStep(youtubeUrl) {
     const venvPython = path.join(__dirname, 'venv', 'bin', 'python3');
     const pythonExecutable = fs.existsSync(venvPython) ? venvPython : 'python3';
 
+    // Pass proxy environment variables to Python script
+    const env = { ...process.env };
+
     // Call the Python transcript script
     const command = `"${pythonExecutable}" "${transcriptScript}" "${youtubeUrl}" "${CONFIG.TRANSCRIPT_OUTPUT}"`;
-    const result = execSync(command, { stdio: 'pipe', encoding: 'utf8' });
+    const result = execSync(command, { stdio: 'pipe', encoding: 'utf8', env });
 
     console.log('✓ Transcript generation completed');
     return true;
@@ -87,37 +113,35 @@ function createReviewFile() {
     const transcriptData = JSON.parse(fs.readFileSync(CONFIG.TRANSCRIPT_OUTPUT, 'utf8'));
 
     // Create markdown content
-    let markdownContent = `# YouTube Transcript Review\n\n`;
-    markdownContent += `**Important**: Please review this transcript before proceeding to clip selection.\n\n`;
-    markdownContent += `## Transcript Data\n\n`;
-    markdownContent += `| Start Time | End Time | Text |\n`;
-    markdownContent += `|------------|----------|------|\n`;
+    let markdownContent = '# YouTube Transcript Review\n\n';
+    markdownContent += '**Important**: Please review this transcript before proceeding to clip selection.\n\n';
+    markdownContent += '## Transcript Data\n\n';
+    markdownContent += '| Start (s) | End (s) | Text |\n';
+    markdownContent += '|-----------|---------|------|\n';
 
     // Add transcript entries (limit to first 50 for readability)
     const displayCount = Math.min(transcriptData.length, 50);
     for (let i = 0; i < displayCount; i++) {
       const entry = transcriptData[i];
-      const startTime = new Date(entry.start * 1000).toISOString().substr(11, 8);
-      const endTime = new Date(entry.end * 1000).toISOString().substr(11, 8);
-      const text = entry.text.replace(/|/g, '\\|'); // Escape pipe characters
+      const text = entry.text.replace(/\|/g, '\\|'); // Escape pipe characters
 
-      markdownContent += `| ${startTime} | ${endTime} | ${text} |\n`;
+      markdownContent += `| ${entry.start.toFixed(1)} | ${entry.end.toFixed(1)} | ${text} |\n`;
     }
 
     if (transcriptData.length > 50) {
       markdownContent += `\n*... and ${transcriptData.length - 50} more segments*\n`;
     }
 
-    markdownContent += `\n## Next Steps\n\n`;
-    markdownContent += `1. Review the transcript above for accuracy\n`;
-    markdownContent += `2. Use the YouTube Highlight Clipper skill to select engaging moments\n`;
-    markdownContent += `3. The skill will generate a clips.json file with:\n`;
-    markdownContent += `   - start: start timestamp in seconds\n`;
-    markdownContent += `   - end: end timestamp in seconds\n`;
-    markdownContent += `   - hook: compelling opening line\n`;
-    markdownContent += `   - title: descriptive title\n`;
+    markdownContent += '\n## Next Steps\n\n';
+    markdownContent += '1. Review the transcript above for accuracy\n';
+    markdownContent += '2. Use the YouTube Highlight Clipper skill to select engaging moments\n';
+    markdownContent += '3. The skill will generate a clips.json file with:\n';
+    markdownContent += '   - start: start timestamp in **seconds**\n';
+    markdownContent += '   - end: end timestamp in **seconds**\n';
+    markdownContent += '   - hook: compelling opening line\n';
+    markdownContent += '   - title: descriptive title\n';
     markdownContent += `4. Save the clips.json file to: ${CONFIG.CLIPS_INPUT}\n`;
-    markdownContent += `5. Run this script again to continue with extraction and rendering\n`;
+    markdownContent += '5. Run this script again to continue with extraction and rendering\n';
 
     // Write the review file
     fs.writeFileSync(CONFIG.REVIEW_FILE, markdownContent);
@@ -134,6 +158,56 @@ function createReviewFile() {
 }
 
 /**
+ * Validate clips.json structure
+ * @returns {boolean} True if clips.json is valid
+ */
+function validateClipsFile() {
+  try {
+    const clipsData = JSON.parse(fs.readFileSync(CONFIG.CLIPS_INPUT, 'utf8'));
+
+    if (!Array.isArray(clipsData.clips)) {
+      console.error('❌ Invalid clips.json: "clips" must be an array');
+      return false;
+    }
+
+    if (clipsData.clips.length === 0) {
+      console.error('❌ Invalid clips.json: "clips" array is empty');
+      return false;
+    }
+
+    for (let i = 0; i < clipsData.clips.length; i++) {
+      const clip = clipsData.clips[i];
+
+      if (typeof clip.start !== 'number' || typeof clip.end !== 'number') {
+        console.error(`❌ Invalid clips.json: Clip ${i + 1} must have numeric "start" and "end" properties`);
+        return false;
+      }
+
+      if (typeof clip.hook !== 'string' || typeof clip.title !== 'string') {
+        console.error(`❌ Invalid clips.json: Clip ${i + 1} must have string "hook" and "title" properties`);
+        return false;
+      }
+
+      if (clip.end <= clip.start) {
+        console.error(`❌ Invalid clips.json: Clip ${i + 1} end time (${clip.end}s) must be greater than start time (${clip.start}s)`);
+        return false;
+      }
+
+      if (clip.hook.trim() === '' || clip.title.trim() === '') {
+        console.error(`❌ Invalid clips.json: Clip ${i + 1} "hook" and "title" cannot be empty`);
+        return false;
+      }
+    }
+
+    console.log(`✅ clips.json validation passed: ${clipsData.clips.length} clip(s) validated`);
+    return true;
+  } catch (error) {
+    console.error('❌ Failed to validate clips.json:', error.message);
+    return false;
+  }
+}
+
+/**
  * Check if Claude step (clip selection) has been completed
  * @returns {boolean} True if clips.json exists and is valid
  */
@@ -143,8 +217,7 @@ function isClaudeStepComplete() {
       return false;
     }
 
-    const clipsData = JSON.parse(fs.readFileSync(CONFIG.CLIPS_INPUT, 'utf8'));
-    return Array.isArray(clipsData.clips) && clipsData.clips.length > 0;
+    return validateClipsFile();
   } catch (error) {
     return false;
   }
@@ -198,6 +271,9 @@ function runRenderingStep() {
 async function main() {
   try {
     showPipelineOverview();
+
+    // Ensure project directories exist
+    ensureProjectDirectories();
 
     // Get YouTube URL from command line argument or environment
     let youtubeUrl = process.argv[2];

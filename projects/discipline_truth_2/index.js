@@ -1,13 +1,5 @@
-import { React } from 'react';
-import { Composition, describeAsset, Seq, Series, Video, registerRoot } from 'remotion';
-
-// Import the clipped video as an asset
-const assetPath = path.join(__dirname, '..', 'assets', clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase() + '_' + (index + 1) + '.mp4');
-const relativePath = path.relative(projectPath, assetPath).replace(/\\/g, '/');
-const videoAsset = describeAsset({
-  id: 'video-asset',
-  src: relativePath,
-});
+import React from 'react';
+import { Composition, Video, registerRoot } from 'remotion';
 
 // Main component for the video clip
 const VideoClip = () => {
@@ -30,9 +22,9 @@ const VideoClipInner = () => {
   return (
     <>
       <Video
+        src="/clip_2.mp4"
         from={3600}
         to={4050}
-        video={videoAsset}
         style={{
           width: 1080,
           height: 1920,
@@ -69,22 +61,6 @@ const VideoClipInner = () => {
         }}>
           "Discipline Truth"
         </div>
-      </div>
-
-      {/* Optional: Add progress bar */}
-      <div style={{
-        position: 'absolute',
-        bottom: 0,
-        left: 0,
-        right: 0,
-        height: 4,
-        background: 'linear-gradient(90deg, #ff0000, #ffff00)',
-        transform: 'scaleX(var(--progress))',
-        transformOrigin: 'left'
-      }}>
-        <Seq>
-          {/* This would be animated in a real implementation */}
-        </Seq>
       </div>
     </>
   );

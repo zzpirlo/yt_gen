@@ -4,83 +4,83 @@
 
 ## Transcript Data
 
-| Start Time | End Time | Text |
-|------------|----------|------|
-| 00:00:01 | 00:00:03 | \|[\|♪\|♪\|♪\|]\| |
-| 00:00:18 | 00:00:21 | \|♪\| \|W\|e\|'\|r\|e\| \|n\|o\| \|s\|t\|r\|a\|n\|g\|e\|r\|s\| \|t\|o\| \|l\|o\|v\|e\| \|♪\| |
-| 00:00:22 | 00:00:26 | \|♪\| \|Y\|o\|u\| \|k\|n\|o\|w\| \|t\|h\|e\| \|r\|u\|l\|e\|s\|
-\|a\|n\|d\| \|s\|o\| \|d\|o\| \|I\| \|♪\| |
-| 00:00:27 | 00:00:31 | \|♪\| \|A\| \|f\|u\|l\|l\| \|c\|o\|m\|m\|i\|t\|m\|e\|n\|t\|'\|s\|
-\|w\|h\|a\|t\| \|I\|'\|m\| \|t\|h\|i\|n\|k\|i\|n\|g\| \|o\|f\| \|♪\| |
-| 00:00:31 | 00:00:35 | \|♪\| \|Y\|o\|u\| \|w\|o\|u\|l\|d\|n\|'\|t\| \|g\|e\|t\| \|t\|h\|i\|s\|
-\|f\|r\|o\|m\| \|a\|n\|y\| \|o\|t\|h\|e\|r\| \|g\|u\|y\| \|♪\| |
-| 00:00:35 | 00:00:39 | \|♪\| \|I\| \|j\|u\|s\|t\| \|w\|a\|n\|n\|a\| \|t\|e\|l\|l\| \|y\|o\|u\|
-\|h\|o\|w\| \|I\|'\|m\| \|f\|e\|e\|l\|i\|n\|g\| \|♪\| |
-| 00:00:40 | 00:00:42 | \|♪\| \|G\|o\|t\|t\|a\| \|m\|a\|k\|e\| \|y\|o\|u\| \|u\|n\|d\|e\|r\|s\|t\|a\|n\|d\| \|♪\| |
-| 00:00:43 | 00:00:45 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|g\|i\|v\|e\| \|y\|o\|u\| \|u\|p\| \|♪\| |
-| 00:00:45 | 00:00:47 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|l\|e\|t\| \|y\|o\|u\| \|d\|o\|w\|n\| \|♪\| |
-| 00:00:47 | 00:00:51 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|r\|u\|n\| \|a\|r\|o\|u\|n\|d\|
-\|a\|n\|d\| \|d\|e\|s\|e\|r\|t\| \|y\|o\|u\| \|♪\| |
-| 00:00:51 | 00:00:53 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|m\|a\|k\|e\| \|y\|o\|u\| \|c\|r\|y\| \|♪\| |
-| 00:00:53 | 00:00:55 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|s\|a\|y\| \|g\|o\|o\|d\|b\|y\|e\| \|♪\| |
-| 00:00:55 | 00:00:59 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|t\|e\|l\|l\| \|a\| \|l\|i\|e\|
-\|a\|n\|d\| \|h\|u\|r\|t\| \|y\|o\|u\| \|♪\| |
-| 00:01:00 | 00:01:04 | \|♪\| \|W\|e\|'\|v\|e\| \|k\|n\|o\|w\|n\| \|e\|a\|c\|h\| \|o\|t\|h\|e\|r\|
-\|f\|o\|r\| \|s\|o\| \|l\|o\|n\|g\| \|♪\| |
-| 00:01:04 | 00:01:09 | \|♪\| \|Y\|o\|u\|r\| \|h\|e\|a\|r\|t\|'\|s\| \|b\|e\|e\|n\| \|a\|c\|h\|i\|n\|g\|
-\|b\|u\|t\| \|y\|o\|u\|'\|r\|e\| \|t\|o\|o\| \|s\|h\|y\| \|t\|o\| \|s\|a\|y\| \|i\|t\| \|♪\| |
-| 00:01:09 | 00:01:12 | \|♪\| \|I\|n\|s\|i\|d\|e\| \|w\|e\| \|b\|o\|t\|h\| \|k\|n\|o\|w\|
-\|w\|h\|a\|t\|'\|s\| \|b\|e\|e\|n\| \|g\|o\|i\|n\|g\| \|♪\| |
-| 00:01:13 | 00:01:17 | \|♪\| \|W\|e\| \|k\|n\|o\|w\| \|t\|h\|e\| \|g\|a\|m\|e\|
-\|a\|n\|d\| \|w\|e\|'\|r\|e\| \|g\|o\|n\|n\|a\| \|p\|l\|a\|y\| \|i\|t\| \|♪\| |
-| 00:01:17 | 00:01:22 | \|♪\| \|A\|n\|d\| \|i\|f\| \|y\|o\|u\| \|a\|s\|k\| \|m\|e\|
-\|h\|o\|w\| \|I\|'\|m\| \|f\|e\|e\|l\|i\|n\|g\| \|♪\| |
-| 00:01:22 | 00:01:25 | \|♪\| \|D\|o\|n\|'\|t\| \|t\|e\|l\|l\| \|m\|e\|
-\|y\|o\|u\|'\|r\|e\| \|t\|o\|o\| \|b\|l\|i\|n\|d\| \|t\|o\| \|s\|e\|e\| \|♪\| |
-| 00:01:25 | 00:01:27 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|g\|i\|v\|e\| \|y\|o\|u\| \|u\|p\| \|♪\| |
-| 00:01:27 | 00:01:29 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|l\|e\|t\| \|y\|o\|u\| \|d\|o\|w\|n\| \|♪\| |
-| 00:01:29 | 00:01:33 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|r\|u\|n\| \|a\|r\|o\|u\|n\|d\|
-\|a\|n\|d\| \|d\|e\|s\|e\|r\|t\| \|y\|o\|u\| \|♪\| |
-| 00:01:33 | 00:01:35 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|m\|a\|k\|e\| \|y\|o\|u\| \|c\|r\|y\| \|♪\| |
-| 00:01:35 | 00:01:38 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|s\|a\|y\| \|g\|o\|o\|d\|b\|y\|e\| \|♪\| |
-| 00:01:38 | 00:01:42 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|t\|e\|l\|l\| \|a\| \|l\|i\|e\|
-\|a\|n\|d\| \|h\|u\|r\|t\| \|y\|o\|u\| \|♪\| |
-| 00:01:42 | 00:01:44 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|g\|i\|v\|e\| \|y\|o\|u\| \|u\|p\| \|♪\| |
-| 00:01:44 | 00:01:46 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|l\|e\|t\| \|y\|o\|u\| \|d\|o\|w\|n\| \|♪\| |
-| 00:01:46 | 00:01:50 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|r\|u\|n\| \|a\|r\|o\|u\|n\|d\|
-\|a\|n\|d\| \|d\|e\|s\|e\|r\|t\| \|y\|o\|u\| \|♪\| |
-| 00:01:50 | 00:01:52 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|m\|a\|k\|e\| \|y\|o\|u\| \|c\|r\|y\| \|♪\| |
-| 00:01:52 | 00:01:54 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|s\|a\|y\| \|g\|o\|o\|d\|b\|y\|e\| \|♪\| |
-| 00:01:54 | 00:01:58 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|t\|e\|l\|l\| \|a\| \|l\|i\|e\|
-\|a\|n\|d\| \|h\|u\|r\|t\| \|y\|o\|u\| \|♪\| |
-| 00:01:59 | 00:02:02 | \|♪\| \|(\|O\|o\|h\|,\| \|g\|i\|v\|e\| \|y\|o\|u\| \|u\|p\|)\| \|♪\| |
-| 00:02:03 | 00:02:07 | \|♪\| \|(\|O\|o\|h\|,\| \|g\|i\|v\|e\| \|y\|o\|u\| \|u\|p\|)\| \|♪\| |
-| 00:02:08 | 00:02:10 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|g\|i\|v\|e\|,\|
-\|n\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|g\|i\|v\|e\| \|♪\| |
-| 00:02:10 | 00:02:11 | \|♪\| \|(\|G\|i\|v\|e\| \|y\|o\|u\| \|u\|p\|)\| \|♪\| |
-| 00:02:12 | 00:02:14 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|g\|i\|v\|e\|,\|
-\|n\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|g\|i\|v\|e\| \|♪\| |
-| 00:02:14 | 00:02:15 | \|♪\| \|(\|G\|i\|v\|e\| \|y\|o\|u\| \|u\|p\|)\| \|♪\| |
-| 00:02:16 | 00:02:21 | \|♪\| \|W\|e\|'\|v\|e\| \|k\|n\|o\|w\|n\| \|e\|a\|c\|h\| \|o\|t\|h\|e\|r\|
-\|f\|o\|r\| \|s\|o\| \|l\|o\|n\|g\| \|♪\| |
-| 00:02:21 | 00:02:25 | \|♪\| \|Y\|o\|u\|r\| \|h\|e\|a\|r\|t\|'\|s\| \|b\|e\|e\|n\| \|a\|c\|h\|i\|n\|g\|
-\|b\|u\|t\| \|y\|o\|u\|'\|r\|e\| \|t\|o\|o\| \|s\|h\|y\| \|t\|o\| \|s\|a\|y\| \|i\|t\| \|♪\| |
-| 00:02:25 | 00:02:29 | \|♪\| \|I\|n\|s\|i\|d\|e\| \|w\|e\| \|b\|o\|t\|h\| \|k\|n\|o\|w\|
-\|w\|h\|a\|t\|'\|s\| \|b\|e\|e\|n\| \|g\|o\|i\|n\|g\| \|♪\| |
-| 00:02:29 | 00:02:33 | \|♪\| \|W\|e\| \|k\|n\|o\|w\| \|t\|h\|e\| \|g\|a\|m\|e\|
-\|a\|n\|d\| \|w\|e\|'\|r\|e\| \|g\|o\|n\|n\|a\| \|p\|l\|a\|y\| \|i\|t\| \|♪\| |
-| 00:02:33 | 00:02:38 | \|♪\| \|I\| \|j\|u\|s\|t\| \|w\|a\|n\|n\|a\| \|t\|e\|l\|l\| \|y\|o\|u\|
-\|h\|o\|w\| \|I\|'\|m\| \|f\|e\|e\|l\|i\|n\|g\| \|♪\| |
-| 00:02:38 | 00:02:41 | \|♪\| \|G\|o\|t\|t\|a\| \|m\|a\|k\|e\| \|y\|o\|u\| \|u\|n\|d\|e\|r\|s\|t\|a\|n\|d\| \|♪\| |
-| 00:02:41 | 00:02:43 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|g\|i\|v\|e\| \|y\|o\|u\| \|u\|p\| \|♪\| |
-| 00:02:43 | 00:02:45 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|l\|e\|t\| \|y\|o\|u\| \|d\|o\|w\|n\| \|♪\| |
-| 00:02:45 | 00:02:49 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|r\|u\|n\| \|a\|r\|o\|u\|n\|d\|
-\|a\|n\|d\| \|d\|e\|s\|e\|r\|t\| \|y\|o\|u\| \|♪\| |
-| 00:02:49 | 00:02:51 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|m\|a\|k\|e\| \|y\|o\|u\| \|c\|r\|y\| \|♪\| |
-| 00:02:51 | 00:02:53 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|s\|a\|y\| \|g\|o\|o\|d\|b\|y\|e\| \|♪\| |
-| 00:02:54 | 00:02:57 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|t\|e\|l\|l\| \|a\| \|l\|i\|e\|
-\|a\|n\|d\| \|h\|u\|r\|t\| \|y\|o\|u\| \|♪\| |
-| 00:02:58 | 00:03:00 | \|♪\| \|N\|e\|v\|e\|r\| \|g\|o\|n\|n\|a\| \|g\|i\|v\|e\| \|y\|o\|u\| \|u\|p\| \|♪\| |
+| Start (s) | End (s) | Text |
+|-----------|---------|------|
+| 1.4 | 3.0 | [♪♪♪] |
+| 18.6 | 21.9 | ♪ We're no strangers to love ♪ |
+| 22.6 | 27.0 | ♪ You know the rules
+and so do I ♪ |
+| 27.0 | 31.0 | ♪ A full commitment's
+what I'm thinking of ♪ |
+| 31.1 | 35.1 | ♪ You wouldn't get this
+from any other guy ♪ |
+| 35.2 | 39.5 | ♪ I just wanna tell you
+how I'm feeling ♪ |
+| 40.5 | 42.9 | ♪ Gotta make you understand ♪ |
+| 43.0 | 45.1 | ♪ Never gonna give you up ♪ |
+| 45.2 | 47.1 | ♪ Never gonna let you down ♪ |
+| 47.3 | 51.1 | ♪ Never gonna run around
+and desert you ♪ |
+| 51.5 | 53.5 | ♪ Never gonna make you cry ♪ |
+| 53.6 | 55.5 | ♪ Never gonna say goodbye ♪ |
+| 55.7 | 59.4 | ♪ Never gonna tell a lie
+and hurt you ♪ |
+| 60.8 | 64.8 | ♪ We've known each other
+for so long ♪ |
+| 64.9 | 69.0 | ♪ Your heart's been aching
+but you're too shy to say it ♪ |
+| 69.1 | 73.0 | ♪ Inside we both know
+what's been going ♪ |
+| 73.4 | 77.2 | ♪ We know the game
+and we're gonna play it ♪ |
+| 77.4 | 82.0 | ♪ And if you ask me
+how I'm feeling ♪ |
+| 82.4 | 85.2 | ♪ Don't tell me
+you're too blind to see ♪ |
+| 85.3 | 87.3 | ♪ Never gonna give you up ♪ |
+| 87.4 | 89.3 | ♪ Never gonna let you down ♪ |
+| 89.4 | 93.7 | ♪ Never gonna run around
+and desert you ♪ |
+| 93.8 | 95.6 | ♪ Never gonna make you cry ♪ |
+| 95.8 | 98.0 | ♪ Never gonna say goodbye ♪ |
+| 98.1 | 102.0 | ♪ Never gonna tell a lie
+and hurt you ♪ |
+| 102.2 | 104.1 | ♪ Never gonna give you up ♪ |
+| 104.3 | 106.4 | ♪ Never gonna let you down ♪ |
+| 106.5 | 110.1 | ♪ Never gonna run around
+and desert you ♪ |
+| 110.8 | 112.7 | ♪ Never gonna make you cry ♪ |
+| 112.8 | 114.7 | ♪ Never gonna say goodbye ♪ |
+| 115.0 | 118.8 | ♪ Never gonna tell a lie
+and hurt you ♪ |
+| 119.8 | 123.0 | ♪ (Ooh, give you up) ♪ |
+| 123.7 | 127.4 | ♪ (Ooh, give you up) ♪ |
+| 128.5 | 130.1 | ♪ Never gonna give,
+never gonna give ♪ |
+| 130.2 | 131.6 | ♪ (Give you up) ♪ |
+| 132.5 | 134.2 | ♪ Never gonna give,
+never gonna give ♪ |
+| 134.4 | 135.9 | ♪ (Give you up) ♪ |
+| 136.8 | 141.1 | ♪ We've known each other
+for so long ♪ |
+| 141.2 | 145.2 | ♪ Your heart's been aching
+but you're too shy to say it ♪ |
+| 145.3 | 149.1 | ♪ Inside we both know
+what's been going ♪ |
+| 149.5 | 153.2 | ♪ We know the game
+and we're gonna play it ♪ |
+| 153.4 | 158.0 | ♪ I just wanna tell you
+how I'm feeling ♪ |
+| 158.6 | 161.3 | ♪ Gotta make you understand ♪ |
+| 161.4 | 163.4 | ♪ Never gonna give you up ♪ |
+| 163.4 | 165.6 | ♪ Never gonna let you down ♪ |
+| 165.7 | 169.7 | ♪ Never gonna run around
+and desert you ♪ |
+| 169.8 | 171.6 | ♪ Never gonna make you cry ♪ |
+| 171.8 | 174.0 | ♪ Never gonna say goodbye ♪ |
+| 174.0 | 177.6 | ♪ Never gonna tell a lie
+and hurt you ♪ |
+| 178.2 | 180.2 | ♪ Never gonna give you up ♪ |
 
 *... and 11 more segments*
 
@@ -89,8 +89,8 @@
 1. Review the transcript above for accuracy
 2. Use the YouTube Highlight Clipper skill to select engaging moments
 3. The skill will generate a clips.json file with:
-   - start: start timestamp in seconds
-   - end: end timestamp in seconds
+   - start: start timestamp in **seconds**
+   - end: end timestamp in **seconds**
    - hook: compelling opening line
    - title: descriptive title
 4. Save the clips.json file to: /workspaces/yt_gen/data/clips.json

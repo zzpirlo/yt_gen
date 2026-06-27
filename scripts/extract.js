@@ -5,6 +5,7 @@
  * based on timestamps from clips.json
  */
 
+require('dotenv').config();
 const { execSync } = require('child_process');
 const fs = require('fs');
 const path = require('path');
@@ -49,15 +50,22 @@ async function downloadVideo(youtubeUrl) {
   // Clear video directory first
   const videoFiles = fs.readdirSync(CONFIG.VIDEO_DIR);
   videoFiles.forEach(file => {
-    fs.unlinkSync(path.join(CONFIG.VIDEO_DIR, file));
-    console.log(`Removed old video file: ${file}`);
+    const filePath = path.join(CONFIG.VIDEO_DIR, file);
+    const stat = fs.statSync(filePath);
+    if (stat.isFile()) {
+      fs.unlinkSync(filePath);
+      console.log(`Removed old video file: ${file}`);
+    } else if (stat.isDirectory()) {
+      fs.rmSync(filePath, { recursive: true, force: true });
+      console.log(`Removed old video directory: ${file}`);
+    }
   });
 
   // Construct yt-dlp command
   const outputTemplate = path.join(CONFIG.VIDEO_DIR, '%(title)s.%(ext)s');
   const command = `yt-dlp ${Object.entries(CONFIG.YTDLP_OPTIONS)
     .map(([key, value]) => {
-      if (key === 'output') return ''; // handled separately
+      if (key === 'output') return '';
       return `--${key} "${value}"`;
     })
     .filter(Boolean)
@@ -77,8 +85,18 @@ async function downloadVideo(youtubeUrl) {
       throw new Error('No video file found after download');
     }
 
-    const videoPath = path.join(CONFIG.VIDEO_DIR, videoFile);
+    let videoPath = path.join(CONFIG.VIDEO_DIR, videoFile);
     console.log(`Video downloaded successfully: ${videoPath}`);
+
+    // Rename to standard filename
+    const standardVideoName = 'full.mp4';
+    const standardVideoPath = path.join(CONFIG.VIDEO_DIR, standardVideoName);
+    if (videoFile !== standardVideoName) {
+      fs.renameSync(videoPath, standardVideoPath);
+      console.log(`Renamed video to standard filename: ${standardVideoName}`);
+      videoPath = standardVideoPath;
+    }
+
     return videoPath;
   } catch (error) {
     throw new Error(`Failed to download video: ${error.message}`);
@@ -96,13 +114,21 @@ async function cutClips(videoPath, clips) {
   // Clear assets directory first
   const assetFiles = fs.readdirSync(CONFIG.ASSETS_DIR);
   assetFiles.forEach(file => {
-    fs.unlinkSync(path.join(CONFIG.ASSETS_DIR, file));
-    console.log(`Removed old asset file: ${file}`);
+    const filePath = path.join(CONFIG.ASSETS_DIR, file);
+    const stat = fs.statSync(filePath);
+    if (stat.isFile()) {
+      fs.unlinkSync(filePath);
+      console.log(`Removed old asset file: ${file}`);
+    } else if (stat.isDirectory()) {
+      // Remove directory recursively
+      fs.rmSync(filePath, { recursive: true, force: true });
+      console.log(`Removed old asset directory: ${file}`);
+    }
   });
 
-  const ffmpegPath = path.join(__dirname, '..', 'ffmpeg');
-  const ffmpegExists = fs.existsSync(ffmpegPath);
-  const ffmpegCommand = ffmpegExists ? ffmpegPath : 'ffmpeg';
+  // Use system ffmpeg or local binary
+  const localFfmpegPath = path.join(__dirname, '..', 'ffmpeg');
+  const ffmpegCommand = fs.existsSync(localFfmpegPath) ? localFfmpegPath : 'ffmpeg';
 
   clips.forEach((clip, index) => {
     const outputName = `${clip.title.replace(/[^a-z0-9]/gi, '_').toLowerCase()}_${index + 1}.mp4`;
