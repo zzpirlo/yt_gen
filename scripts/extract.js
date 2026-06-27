@@ -24,7 +24,10 @@ const CONFIG = {
   YTDLP_OPTIONS: {
     format: 'best[height<=720]', // Limit quality to save bandwidth/time
     output: '%(title)s.%(ext)s'
-  }
+  },
+
+  // Proxy (from env vars)
+  PROXY: process.env.YOUTUBE_TRANSCRIPT_PROXY || process.env.HTTP_PROXY || process.env.HTTPS_PROXY
 };
 
 /**
@@ -63,13 +66,19 @@ async function downloadVideo(youtubeUrl) {
 
   // Construct yt-dlp command
   const outputTemplate = path.join(CONFIG.VIDEO_DIR, '%(title)s.%(ext)s');
-  const command = `yt-dlp ${Object.entries(CONFIG.YTDLP_OPTIONS)
+  let command = `yt-dlp ${Object.entries(CONFIG.YTDLP_OPTIONS)
     .map(([key, value]) => {
       if (key === 'output') return '';
       return `--${key} "${value}"`;
     })
     .filter(Boolean)
     .join(' ')} -o "${outputTemplate}" "${youtubeUrl}"`;
+
+  // Add proxy if configured
+  if (CONFIG.PROXY) {
+    command += ` --proxy "${CONFIG.PROXY}"`;
+    console.log(`Using proxy for download: ${CONFIG.PROXY}`);
+  }
 
   try {
     execSync(command, { stdio: 'inherit' });

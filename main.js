@@ -97,6 +97,12 @@ function runTranscriptStep(youtubeUrl) {
   } catch (error) {
     console.error('✗ Transcript generation failed:');
     console.error(error.message);
+
+    if (fs.existsSync(CONFIG.TRANSCRIPT_OUTPUT)) {
+      console.warn('⚠️ Using existing transcript file from a previous run.');
+      return true;
+    }
+
     return false;
   }
 }

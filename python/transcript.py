@@ -2,15 +2,18 @@
 """
 YouTube Transcript Fetcher
 Responsible for fetching YouTube transcripts and outputting clean JSON.
-Supports proxy configuration to bypass IP blocking.
+Supports proxy configuration to bypass IP blocking and falls back to yt-dlp captions.
 """
 
 import sys
 import json
 import re
 import os
+import subprocess
+import tempfile
 from youtube_transcript_api import YouTubeTranscriptApi
 from youtube_transcript_api._errors import TranscriptsDisabled, NoTranscriptFound, VideoUnavailable
+from youtube_transcript_api.proxies import GenericProxyConfig
 
 
 def extract_video_id(url):
@@ -34,6 +37,15 @@ def extract_video_id(url):
     raise ValueError("Unable to extract video ID from URL")
 
 
+def build_proxy_config(proxy_url):
+    if not proxy_url:
+        return None
+    proxy_url = proxy_url.strip()
+    if not proxy_url:
+        return None
+    return GenericProxyConfig(http_url=proxy_url, https_url=proxy_url)
+
+
 def fetch_transcript(video_id, languages=['en'], proxy=None):
     """Fetch transcript for given video ID.
 
@@ -41,14 +53,12 @@ def fetch_transcript(video_id, languages=['en'], proxy=None):
         video_id: YouTube video ID
         languages: List of preferred languages
         proxy: Proxy URL (e.g., 'http://user:pass@host:port' or 'socks5://host:port')
-               Note: The youtube-transcript-api library uses httpx internally,
-               which automatically respects HTTP_PROXY and HTTPS_PROXY environment variables.
-               You can also set YOUTUBE_TRANSCRIPT_PROXY env var.
+               This script translates the proxy URL into a GenericProxyConfig
+               so the youtube-transcript-api library can use it.
     """
+    proxy_config = build_proxy_config(proxy)
     try:
-        # Create an instance of YouTubeTranscriptApi
-        # The library uses httpx internally which respects HTTP_PROXY/HTTPS_PROXY env vars
-        api = YouTubeTranscriptApi()
+        api = YouTubeTranscriptApi(proxy_config=proxy_config)
 
         # Try to fetch transcript with preferred language
         transcript_obj = None
@@ -57,7 +67,7 @@ def fetch_transcript(video_id, languages=['en'], proxy=None):
             try:
                 transcript_obj = api.fetch(video_id, languages=[lang])
                 break
-            except:
+            except Exception:
                 continue
 
         # If no preferred language found, try without language specification
@@ -86,10 +96,77 @@ def fetch_transcript(video_id, languages=['en'], proxy=None):
     except VideoUnavailable:
         raise Exception("Video is unavailable")
     except Exception as e:
-        # Check if it's an IP block error
-        if "blocked" in str(e).lower() or "ip" in str(e).lower() or "429" in str(e):
-            raise Exception(f"YouTube IP block detected. Set HTTP_PROXY/HTTPS_PROXY or YOUTUBE_TRANSCRIPT_PROXY env var. Error: {str(e)}")
-        raise Exception(f"Error fetching transcript: {str(e)}")
+        message = str(e)
+        lower_message = message.lower()
+        if proxy and (
+            "unable to connect to proxy" in lower_message
+            or "failed to establish a new connection" in lower_message
+            or "connection refused" in lower_message
+        ):
+            raise Exception(f"Proxy failure while fetching transcript: {message}")
+
+        if "blocked" in lower_message or "ip" in lower_message or "429" in lower_message:
+            print(f"Transcript API fetch failed: {message}", file=sys.stderr)
+            print("Falling back to yt-dlp captions extraction", file=sys.stderr)
+            return fetch_transcript_from_ytdlp(video_id, proxy=proxy)
+        raise Exception(f"Error fetching transcript: {message}")
+
+
+def fetch_transcript_from_ytdlp(video_id, proxy=None):
+    """Fallback to yt-dlp captions when the transcript API is blocked."""
+    try:
+        with tempfile.TemporaryDirectory(prefix='yt-clipper-', dir='/tmp') as temp_dir:
+            cmd = [
+                'yt-dlp',
+                '--write-auto-subs',
+                '--write-subs',
+                '--skip-download',
+                '--sub-lang', 'en',
+                '--sub-format', 'vtt',
+                '--output', os.path.join(temp_dir, '%(id)s.%(ext)s'),
+            ]
+            # Add proxy if provided
+            if proxy:
+                cmd.extend(['--proxy', proxy])
+
+            cmd.append(f'https://www.youtube.com/watch?v={video_id}')
+            result = subprocess.run(cmd, capture_output=True, text=True, timeout=180)
+            if result.returncode != 0:
+                raise Exception(result.stderr.strip() or result.stdout.strip() or 'yt-dlp failed')
+
+            caption_files = [os.path.join(temp_dir, f) for f in os.listdir(temp_dir) if f.endswith('.vtt')]
+            if not caption_files:
+                raise Exception('No .vtt captions were produced by yt-dlp')
+
+            with open(caption_files[0], 'r', encoding='utf-8') as f:
+                vtt_content = f.read()
+
+        cues = []
+        for block in re.split(r'\n\n+', vtt_content.strip()):
+            lines = [line.strip() for line in block.splitlines() if line.strip()]
+            if not lines or lines[0].startswith('WEBVTT'):
+                continue
+            if '-->' not in lines[0]:
+                continue
+            text_lines = [line for line in lines[1:] if not line.startswith('<')]
+            if text_lines:
+                cues.append(' '.join(text_lines))
+
+        if not cues:
+            raise Exception('No caption cues were parsed from yt-dlp output')
+
+        clean_transcript = []
+        for idx, text in enumerate(cues):
+            clean_transcript.append({
+                "text": text,
+                "start": idx * 3.0,
+                "duration": 3.0,
+                "end": idx * 3.0 + 3.0,
+            })
+
+        return clean_transcript
+    except Exception as e:
+        raise Exception(f"Captions fallback failed: {str(e)}")
 
 
 def main():
@@ -101,8 +178,14 @@ def main():
     url_or_id = sys.argv[1]
     output_file = sys.argv[2] if len(sys.argv) > 2 else "data/transcript.json"
 
-    # Get proxy from environment variable
-    proxy = os.getenv('YOUTUBE_TRANSCRIPT_PROXY') or os.getenv('HTTP_PROXY') or os.getenv('HTTPS_PROXY')
+    # Get proxy from supported environment variables
+    proxy = (
+        os.getenv('YOUTUBE_TRANSCRIPT_PROXY')
+        or os.getenv('HTTPS_PROXY')
+        or os.getenv('https_proxy')
+        or os.getenv('HTTP_PROXY')
+        or os.getenv('http_proxy')
+    )
 
     try:
         # Extract video ID
